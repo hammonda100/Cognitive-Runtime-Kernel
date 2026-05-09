@@ -16,6 +16,21 @@ Core concepts:
 
 ## Quick Start
 
+## Setup
+
+1. Clone:
+   git clone https://github.com/yourusername/cpk.git
+2. Enter project directory:
+   cd cpk
+3. Create virtual environment:
+   python -m venv .venv
+4. Activate venv:
+   source .venv/bin/activate  # macOS/Linux
+   .\.venv\Scripts\activate   # Windows
+5. Install dependencies:
+   pip install -r requirements.txt
+6. Run setup wizard:
+   python -m cpk setup
 ```bash
 git clone <repo>
 cd cpk
