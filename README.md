@@ -13,6 +13,24 @@ Core concepts:
 - bounded attention economics
 - replayable runtime state
 - provider-agnostic cognition
+Cognitive Processing Kernel (CPK)
+
+Portable, cross-platform runtime for LLM-driven agents with a live canvas UI.
+
+🚀 Project Vision
+
+CPK lets anyone run a fully functional cognitive runtime on desktop or mobile, connecting their preferred local or cloud LLM. Users can:
+
+Orchestrate entities, events, and tools safely
+Visualize and interact with live graphs
+Route continuous signals (audio, video, sensors)
+Experiment in a sandboxed, modular environment
+🎯 Current Goals (v0.2)
+Execution-Ready Kernel: Event handling, entity lifecycle, simulation gate
+Cognition Provider Layer: Pluggable LLM interface; local and remote support
+Signal Fabric: Audio/video routing outside main event loop
+Canvas UI: Web-based PWA for live graph visualization
+First Demo: 2+2 computation & LFO → audio output examples
 
 ## Quick Start
 
