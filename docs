@@ -1,0 +1,152 @@
+# CPK Architecture
+
+This document describes the internal architecture of the **Cognitive Processing Kernel (CPK)**. 
+  It is intended for contributors, developers, and advanced users who want to understand the system design and how the components interact.
+
+---
+
+## 1. Overview
+
+CPK is a **portable cognitive runtime** designed to orchestrate LLMs, agents, and Transformative Learning Modules (TLMs) across devices. 
+  It separates concerns into three primary layers:
+┌─────────────────────────────┐
+│ Canvas UI │
+│ - Web/mobile PWA │
+│ - Interactive visualization│
+└───────────────┬─────────────┘
+│
+┌───────────────▼─────────────┐
+│ CPK Kernel (Python) │
+│ - Event fabric & scheduler │
+│ - Entity management │
+│ - Memory & graph │
+│ - Capabilities & safety │
+└───────────────┬─────────────┘
+│
+┌───────────────▼─────────────┐
+│ Cognition Provider Layer │
+│ - Local: llama.cpp, Ollama│
+│ - Remote: OpenAI, Anthropic│
+│ - Pluggable & auto-detect │
+└───────────────┬─────────────┘
+│
+┌───────────────▼─────────────┐
+│ Host System │
+│ - OS APIs & sandboxed tools│
+└─────────────────────────────┘
+  
+---
+
+## 2. Kernel Components
+
+### 2.1 Event Fabric
+- Implements **causal event ordering**.
+- Handles entity lifecycle: `SPAWN`, `UPDATE`, `TERMINATE`, `FAIL`.
+- Supports **simulation gate**, allowing safe evaluation of proposed changes before committing them to the main state.
+
+### 2.2 Entities
+Entities are the core objects in CPK:
+- **Types:** Read (`R`), Write (`W`), Memory (`M`), Tool (`T`), Process (`P`)
+- Each entity:
+  - Has identity & capability tracking
+  - Can spawn child entities
+  - Interacts with other entities via controlled events
+
+### 2.3 TLMs (Transformative Learning Modules)
+- Self-contained modules for reasoning, prediction, or transformation tasks.
+- Can be local (Python code) or LLM-backed.
+- Operate under strict **budget and sandbox constraints** to prevent runaway computations.
+
+### 2.4 Agents
+- Lightweight orchestrators running specific objectives.
+- Use the kernel to manage entities and TLMs.
+- Can spawn or terminate child agents for task decomposition.
+- Access controlled via capability tokens.
+
+---
+
+## 3. Cognition Providers (LLMs)
+
+CPK separates reasoning from execution via **pluggable cognition providers**:
+
+| Provider Type | Examples           | Notes |
+|---------------|------------------|-------|
+| Local         | llama.cpp, Ollama | Runs on device, offline |
+| Remote API    | OpenAI, Anthropic| Requires API keys |
+| Hybrid        | Local + Remote   | Small model for routing, large model for planning |
+
+**Provider Interface (`CognitiveProvider`)**:
+- `generate(prompt: str) -> str`
+- `stream(prompt: str) -> Iterator[str]`
+- `status() -> dict`
+
+The kernel can switch providers at runtime. Users select the provider during setup (`cpk setup`).
+
+---
+
+## 4. Signal Fabric
+
+- Handles **continuous streams** (audio, video, sensors) outside the main event loop.
+- Implements type checking, rate limiting, and ring-buffer storage.
+- Supports channels like `audio_in`, `audio_out`, `video_in`, `file_io`.
+- Events configure signal topology, but signals flow independently to avoid blocking reasoning.
+
+---
+
+## 5. Canvas UI
+
+- **Web or mobile PWA** for cross-platform support.
+- Visualizes entities as nodes and connections as edges in a live graph.
+- User actions emit events to the kernel:
+  - Draw a line → `WRITE_EDGE`
+  - Adjust a knob → `UPDATE_SIGNAL_NODE`
+- WebSocket or IPC protocol connects UI to kernel.
+
+---
+
+## 6. Tool Integration
+
+- Tools are Python functions exposed as entities.
+- Can be invoked safely via sandboxed API.
+- Examples:
+  - LFO generator
+  - Audio mixer
+  - External API calls (HTTP, database)
+
+---
+
+## 7. Development Structure
+cpk/
+├── src/cpk/
+│ ├── kernel/ # Core event loop, entities, simulation gate
+│ ├── providers/ # LLM integration layer
+│ ├── agents/ # Agent classes and orchestrators
+│ ├── tlms/ # Transformative Learning Modules
+│ ├── signal/ # SignalFabric & channels
+│ └── cli.py # Setup & bootstrap
+├── examples/ # Example scripts and demos
+├── docs/ # Architecture & tutorials
+├── tests/ # Unit & integration tests
+└── README.md
+  
+---
+
+## 8. Security & Safety
+
+- **Capability tokens** restrict access to sensitive operations.
+- **Simulation gate** prevents invalid state transitions.
+- **Sandboxed tools** isolate untrusted code.
+
+---
+
+## 9. Contribution Guidelines
+
+- Follow the `src/cpk` structure.
+- Use unit tests for all new entities or TLMs.
+- Update `docs/architecture.md` if adding major components.
+- Respect capability rules and signal fabric contracts.
+
+---
+
+This document is meant to give a **developer-centric view** of CPK’s architecture while keeping high-level clarity. 
+  For usage and quickstart instructions, refer to [README.md](../README.md).
